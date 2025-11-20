@@ -182,9 +182,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 for action in gameState.getLegalActions(agentIndex):
                     successor = gameState.generateSuccessor(agentIndex, action)
                     score, _ = minimax(nextAgent, nextDepth, successor)
-                    if score < bestScore:
-                        bestScore = score
-                        bestAction = action
+                    bestScore = min(bestScore, score)
 
                 return bestScore, None
 
@@ -236,21 +234,21 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                     nextAgent = 0
                     nextDepth += 1
 
-                minVal = float('inf')
+                bestScore = float('inf')
                 bestAction = None
                 for action in gameState.getLegalActions(agentIndex):
                     successor = gameState.generateSuccessor(agentIndex, action)
                     score, _ = alphaBeta(nextAgent, nextDepth, successor, alpha, beta)
-                    if score < minVal:
-                        minVal = score
+                    if score < bestScore:
+                        bestScore = score
                         bestAction = action
 
-                    if minVal < alpha:
+                    if bestScore < alpha:
                         break  
 
-                    beta = min(beta, minVal)
+                    beta = min(beta, bestScore)
 
-                return minVal, bestAction
+                return bestScore, bestAction
 
         _, action = alphaBeta(0, 0, gameState, float('-inf'), float('inf'))
         return action
@@ -278,16 +276,16 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 return self.evaluationFunction(gameState), None
 
             if agentIndex == 0:
-                bestValue = float('-inf')
+                bestscore = float('-inf')
                 bestAction = None
                 for action in legalActions:
                     successor = gameState.generateSuccessor(agentIndex, action)
-                    value, _ = expectimax(1, depth, successor)
-                    if value > bestValue:
-                        bestValue = value
+                    score, _ = expectimax(1, depth, successor)
+                    if score > bestscore:
+                        bestscore = score
                         bestAction = action
 
-                return bestValue, bestAction
+                return bestscore, bestAction
 
             else:
                 nextIndex = agentIndex + 1
@@ -297,13 +295,13 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                     nextDepth = depth + 1
 
                 probability = 1.0 / len(legalActions)
-                expectedValue = 0
+                expectedscore = 0
                 for action in legalActions:
                     successor = gameState.generateSuccessor(agentIndex, action)
-                    value, _ = expectimax(nextIndex, nextDepth, successor)
-                    expectedValue += probability * value
+                    score, _ = expectimax(nextIndex, nextDepth, successor)
+                    expectedscore += probability * score
 
-                return expectedValue, None
+                return expectedscore, None
 
         _, bestAction = expectimax(0, 0, gameState)
         return bestAction
@@ -333,9 +331,6 @@ def betterEvaluationFunction(currentGameState: GameState):
     if len(foodList) == 0:
         return float('inf')
     
-    if pos in foodList:
-        score += 100
-
     if foodList:
         foodDistances = [manhattanDistance(pos, f) for f in foodList]
         closestFood = min(foodDistances)
@@ -350,7 +345,7 @@ def betterEvaluationFunction(currentGameState: GameState):
             score += 200.0 / (d + 1)
         else:                            
             if d <= 1:
-                return -float('inf')     
+                return float('-inf')     
             elif d <= 2:
                 score -= 200
             else:
@@ -359,6 +354,9 @@ def betterEvaluationFunction(currentGameState: GameState):
     score -= 20 * len(capsules)
     for cap in capsules:
         score += 10.0 / (manhattanDistance(pos, cap) + 1)
+    
+    if pos == Directions.STOP:
+            score -= 500
 
     return score
     util.raiseNotDefined()
