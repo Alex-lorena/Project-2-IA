@@ -75,12 +75,13 @@ e
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
-        score = successorGameState.getScore()
+        score = 0
 
         for ghostpos in successorGameState.getGhostPositions():
             dist = manhattanDistance(newPos, ghostpos)
             if dist < 2:
                 score -= 1000  
+            score -= 10.0
 
         foodList = newFood.asList()
         if len(foodList) == 0:
@@ -90,9 +91,9 @@ e
         score += 10.0 / closestFood  
 
         if action == Directions.STOP:
-            score -= 50
+            score -= 50.0
 
-        return score
+        return successorGameState.getScore() + score
 
 
 def scoreEvaluationFunction(currentGameState: GameState):
@@ -251,6 +252,9 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
                 return bestScore, bestAction
 
         _, action = alphaBeta(0, 0, gameState, float('-inf'), float('inf'))
+        if action is None:
+            legal = gameState.getLegalActions(0)
+            return legal[0]
         return action
         util.raiseNotDefined()
 
@@ -304,6 +308,9 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
                 return expectedscore, None
 
         _, bestAction = expectimax(0, 0, gameState)
+        if bestAction is None:
+            legal = gameState.getLegalActions(0)
+            return legal[0]
         return bestAction
         util.raiseNotDefined()
 
