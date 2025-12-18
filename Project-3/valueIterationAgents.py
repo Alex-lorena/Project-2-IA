@@ -149,4 +149,46 @@ class PrioritizedSweepingValueIterationAgent(ValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
+        predecessors = {s: set() for s in self.mdp.getStates()}
 
+        for s in self.mdp.getStates():
+            if self.mdp.isTerminal(s):
+                continue
+            for a in self.mdp.getPossibleActions(s):
+                for (nextState, prob) in self.mdp.getTransitionStatesAndProbs(s, a):
+                    if prob > 0:
+                        predecessors[nextState].add(s)
+
+        pq = util.PriorityQueue()
+        for s in self.mdp.getStates():
+            if self.mdp.isTerminal(s):
+                continue
+            actions = self.mdp.getPossibleActions(s)
+            if not actions:
+                continue
+            maxQ = max(self.computeQValueFromValues(s, a) for a in actions)
+            diff = abs(self.values[s] - maxQ)
+            pq.update(s, -diff)
+
+        for _ in range(self.iterations):
+            if pq.isEmpty():
+                break
+
+            s = pq.pop()
+            if not self.mdp.isTerminal(s):
+                actions = self.mdp.getPossibleActions(s)
+                if actions:
+                    self.values[s] = max(self.computeQValueFromValues(s, a) for a in actions)
+                    
+        for p in predecessors[s]:
+            if self.mdp.isTerminal(p):
+                continue
+            actions = self.mdp.getPossibleActions(p)
+            if not actions:
+                continue
+            maxQ = max(self.computeQValueFromValues(p, a) for a in actions)
+            diff = abs(self.values[p] - maxQ)
+            if diff > self.theta:
+                pq.update(p, -diff)
+
+#Tentei executar o codigo mas apesar de diversas tentativas não encontrei o problema do codigo.

@@ -22,11 +22,9 @@
 def question2():
     answerDiscount = 0.9
     answerNoise = 0.0
-    # with noise = 0.0, the problem now becomes deterministic
-    # and the agent will always end up in the intented successor
-    # state, thereby it will reach the optimal policy will cross
-    # the bridge, as it will always move in the direction of maximizing 
-    # expected rewards 
+    """
+    with noise = 0.0, the problem now becomes deterministic and the agent will always end up in the intented successor state, thereby it will reach the optimal policy will cross the bridge, as it will always move in the direction of maximizing expected rewards 
+    """
     return answerDiscount, answerNoise
 
 def question3a():
