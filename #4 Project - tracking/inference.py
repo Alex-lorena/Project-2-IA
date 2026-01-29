@@ -591,6 +591,18 @@ class ExactInference(InferenceModule):
         position is known.
         """
         "*** YOUR CODE HERE ***"
+        updatedBeliefs = {}
+
+        # Get pacman's current position and jail position once, as they won't change during interation
+        pacmanPos = gameState.getPacmanPosition()
+        jailPos = self.getJailPosition()
+
+        # Calculate and update beliefs based on observaion probabilities
+        for ghostPos in self.allPositions:
+            observationProb = self.getObservationProb(observation, pacmanPos, ghostPos, jailPos)
+            updatedBeliefs[ghostPos] = self.beliefs[ghostPos] * observationProb
+
+        self.beliefs.update(updatedBeliefs)
         "*** END YOUR CODE HERE ***"
         self.beliefs.normalize()
     
