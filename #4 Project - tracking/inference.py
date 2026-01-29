@@ -688,18 +688,18 @@ class ParticleFilter(InferenceModule):
         This function should return a normalized distribution.
         """
         "*** YOUR CODE HERE ***"
-        particle_counts = {}
+        particleCount = {}
 
         # Count the frequency of each particle position
         for particle in self.particles:
-            particle_counts[particle] = particle_counts.get(particle, 0) + 1
+            particleCount[particle] = particleCount.get(particle, 0) + 1
 
         totalParticles = len(self.particles)
 
         belief_distribution = DiscreteDistribution()
 
         # Convert counts to probabilities for each particle
-        belief_distribution.update({particle: count / totalParticles for particle, count in particle_counts.items()})
+        belief_distribution.update({particle: count / totalParticles for particle, count in particleCount.items()})
 
         # Normalizing may be redundant if calculations are correct, but it ensures the distribution sums to 1
         # especially useful if there are any floating-point arithmetic issues
@@ -725,7 +725,26 @@ class ParticleFilter(InferenceModule):
         the DiscreteDistribution may be useful.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        weight_distribution = DiscreteDistribution()
+
+        # Pacman's position and the jail position do not change for each particle,
+        # so calculate these once to avoid redundant calculations
+        pacman_position = gameState.getPacmanPosition()
+        jail_position = self.getJailPosition()
+
+        # Calculate observation probabilities for each particle and update their weights
+        for particle in self.particles:
+            observation_prob = self.getObservationProb(observation, pacman_position, particle, jail_position)
+            weight_distribution[particle] += observation_prob
+
+        # Normalize the weight distribution to ensure it sums to 1
+        weight_distribution.normalize()
+
+        # Decide whether to resample particles or reinitialize based on the total weight
+        if weight_distribution.total() > 0:
+            self.particles = [weight_distribution.sample() for _ in range(self.numParticles)]
+        else:
+            self.initializeUniformly(gameState)
         "*** END YOUR CODE HERE ***"
     
     ########### ########### ###########
@@ -738,5 +757,6 @@ class ParticleFilter(InferenceModule):
         gameState.
         """
         "*** YOUR CODE HERE ***"
-        raiseNotDefined()
+        # Replace the list of current particles with a new list of sampled next states
+        self.particles = [self.getPositionDistribution(gameState, particle).sample() for particle in self.particles]
         "*** END YOUR CODE HERE ***"
